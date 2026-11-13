@@ -1,0 +1,1830 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1e293b">
+  <meta name="description" content="Parte Diario Pro v1.1.1 - Control de jornada, servicios, vehículos y liquidación">
+  <title>Parte Diario Pro v1.1.1</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/svg+xml" href="./icon.svg">
+  <link rel="apple-touch-icon" href="./icon.svg">
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --primary: #1e293b;
+      --accent: #0284c7;
+      --accent-light: #e0f2fe;
+      --success: #16a34a;
+      --success-hover: #15803d;
+      --danger: #dc2626;
+      --border: #cbd5e1;
+      --text: #0f172a;
+      --muted: #64748b;
+      --gray-soft: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      padding-bottom: 90px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Header */
+    header {
+      background: var(--primary);
+      color: #fff;
+      padding: 14px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .header-title {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header-title h1 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .header-title span {
+      font-size: 0.72rem;
+      color: #94a3b8;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .btn-icon {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-icon:active {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 64px;
+      z-index: 90;
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 12px 8px;
+      border: none;
+      background: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--muted);
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+      background: #f8fafc;
+    }
+
+    /* Container */
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 12px;
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 14px;
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    .card-header {
+      background: #e2e8f0;
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      padding: 7px 10px;
+      border-radius: 7px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      letter-spacing: 0.4px;
+      gap: 6px;
+    }
+
+    .card-header.dark {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    /* Form grids */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 10px;
+    }
+
+    label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="time"],
+    input[type="number"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 9px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      color: var(--text);
+      background: #fff;
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
+    }
+
+    input[readonly] {
+      background: #f8fafc;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    /* Service rows */
+    .service-item {
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 10px;
+      background: #fafafa;
+    }
+
+    .service-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .badge {
+      background: var(--primary);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    .type-checks {
+      display: flex;
+      gap: 10px;
+    }
+
+    .check-pill {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .check-pill input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--accent);
+    }
+
+    .service-times {
+      display: grid;
+      grid-template-columns: 1fr 1fr 0.85fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .service-desc {
+      display: grid;
+      grid-template-columns: 0.7fr 2fr;
+      gap: 8px;
+    }
+
+    /* Hours summary box */
+    .hours-summary {
+      background: var(--accent-light);
+      border: 1px solid #bae6fd;
+      border-radius: 10px;
+      padding: 12px;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr 1fr;
+      gap: 8px;
+      align-items: end;
+    }
+
+    .hours-summary .total-box {
+      background: var(--primary);
+      color: #fff;
+      padding: 8px 10px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .hours-summary .total-box small {
+      display: block;
+      font-size: 0.7rem;
+      color: #cbd5e1;
+    }
+
+    .hours-summary .total-box strong {
+      font-size: 1.2rem;
+    }
+
+    .auto-hint {
+      font-size: 0.74rem;
+      color: #0369a1;
+      margin-top: 6px;
+      font-weight: 600;
+    }
+
+    /* Pluses grid */
+    .pluses-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .plus-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: #fff;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .plus-item.checked-highlight {
+      background: #f0fdf4;
+      border-color: #86efac;
+      color: #14532d;
+    }
+
+    .plus-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    /* Cash / Arqueo Table */
+    .cash-row {
+      display: grid;
+      grid-template-columns: 95px 1fr 100px;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .denom-label {
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: var(--primary);
+      text-align: right;
+      padding-right: 6px;
+    }
+
+    .cash-subtotal {
+      text-align: right;
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: var(--text);
+    }
+
+    .total-banner {
+      background: #f8fafc;
+      border: 2px solid var(--primary);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin: 12px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .total-banner.final {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .total-banner span {
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .total-banner strong {
+      font-size: 1.35rem;
+    }
+
+    .discount-row {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    /* Vehicle cards */
+    .vehicle-block {
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 10px;
+      background: #fafafa;
+    }
+
+    .station-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    /* History list */
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      background: #fff;
+    }
+
+    .history-info strong {
+      display: block;
+      font-size: 0.95rem;
+    }
+
+    .history-info small {
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .history-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    /* Bottom Action Bar */
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border-top: 1px solid var(--border);
+      padding: 10px 14px;
+      display: flex;
+      gap: 10px;
+      z-index: 95;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.06);
+    }
+
+    .btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: #fff;
+    }
+
+    .btn-outline {
+      background: #f1f5f9;
+      color: var(--primary);
+      border: 1px solid var(--border);
+      flex: 0.6;
+    }
+
+    .btn-sm {
+      padding: 5px 9px;
+      font-size: 0.76rem;
+      border-radius: 6px;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Signature Footer */
+    .app-footer {
+      text-align: center;
+      padding: 18px 10px 10px;
+      color: var(--gray-soft);
+      font-size: 0.72rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      opacity: 0.75;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 200;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-card {
+      background: #fff;
+      border-radius: 16px;
+      max-width: 460px;
+      width: 100%;
+      padding: 20px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25);
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .modal-card h2 {
+      font-size: 1.15rem;
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+
+    .modal-card p, .modal-card li {
+      font-size: 0.88rem;
+      color: #334155;
+      line-height: 1.45;
+      margin-bottom: 8px;
+    }
+
+    .modal-card ul {
+      padding-left: 18px;
+      margin-bottom: 14px;
+    }
+
+    .toast {
+      position: fixed;
+      top: 74px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0f172a;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 99px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      z-index: 300;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+
+    .summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin-bottom: 12px;
+    }
+
+    .summary-table td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .summary-table td:last-child {
+      text-align: right;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-title">
+      <h1>Parte Diario Pro</h1>
+      <span>v1.1.1 · Liquidación y Jornada Inteligente</span>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn-icon" id="btnHelp" title="Instrucciones">?</button>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button type="button" class="tab-btn active" data-tab="tab-jornada">1. Jornada</button>
+    <button type="button" class="tab-btn" data-tab="tab-vehiculos">2. Vehículos</button>
+    <button type="button" class="tab-btn" data-tab="tab-arqueo">3. Arqueo €</button>
+    <button type="button" class="tab-btn" data-tab="tab-historial">Historial</button>
+  </nav>
+
+  <div class="container">
+
+    <!-- TAB 1: JORNADA Y SERVICIOS -->
+    <section id="tab-jornada" class="tab-panel active">
+      <div class="card">
+        <div class="card-header dark">Datos del Conductor</div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="conductorNombre">Nombre y Apellidos</label>
+            <input type="text" id="conductorNombre" placeholder="Ej: Mohamed Basha Sherrif">
+          </div>
+          <div class="form-group">
+            <label for="parteFecha">Día</label>
+            <input type="date" id="parteFecha">
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span>Reloj Fichador (Toma y Deje)</span>
+          <span id="totalFichadorBadge" style="color: var(--accent);">0,00 h</span>
+        </div>
+        <div class="grid-2">
+          <div>
+            <label>Fichaje 1 (Entrada / Salida)</label>
+            <div class="grid-2" style="margin-top:4px;">
+              <input type="time" id="fichaje1In">
+              <input type="time" id="fichaje1Out">
+            </div>
+          </div>
+          <div>
+            <label>Fichaje 2 (Entrada / Salida)</label>
+            <div class="grid-2" style="margin-top:4px;">
+              <input type="time" id="fichaje2In">
+              <input type="time" id="fichaje2Out">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span>Servicios (Hoja de Servicio)</span>
+          <span id="subtotalServiciosBadge">0,00 h</span>
+        </div>
+        <div id="serviciosContainer"></div>
+
+        <div class="hours-summary">
+          <div class="form-group" style="margin:0;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <label for="ajusteHoras">Ajuste (hrs)</label>
+              <button type="button" class="btn-sm" id="btnAutoAjuste6" style="background:var(--accent); color:#fff; padding:2px 6px; font-size:0.68rem;">Min 6h</button>
+            </div>
+            <input type="number" step="0.01" id="ajusteHoras" value="0" placeholder="0.00">
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label>Suma Servicios</label>
+            <input type="text" id="sumaServiciosInput" readonly value="0,00">
+          </div>
+          <div class="total-box">
+            <small>TOTAL HORAS</small>
+            <strong id="totalHorasFinal">0,00</strong>
+          </div>
+        </div>
+        <div id="ajusteAutoMsg" class="auto-hint"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Acciones Formativas</div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="formacionIn">Hora Inicio</label>
+            <input type="time" id="formacionIn">
+          </div>
+          <div class="form-group">
+            <label for="formacionOut">Hora Fin</label>
+            <input type="time" id="formacionOut">
+          </div>
+        </div>
+        <div class="form-group" style="margin:0;">
+          <label for="formacionDesc">Descripción</label>
+          <input type="text" id="formacionDesc" placeholder="Cursos, Jornadas Técnicas, etc.">
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span>Dietas y Pluses (Automáticos)</span>
+          <button type="button" class="btn-sm" id="btnRecalcularPluses" style="background:var(--primary); color:#fff;">Recalcular</button>
+        </div>
+        <div class="pluses-grid">
+          <label class="plus-item" id="lbl_plusDietaComida"><input type="checkbox" id="plusDietaComida" data-autoplus="dietaComida"> Dieta Comida</label>
+          <label class="plus-item" id="lbl_plusTurnoPartido"><input type="checkbox" id="plusTurnoPartido" data-autoplus="turnoPartido"> Plus Turno Partido</label>
+          <label class="plus-item" id="lbl_plusDietaCena"><input type="checkbox" id="plusDietaCena" data-autoplus="dietaCena"> Dieta Cena</label>
+          <label class="plus-item" id="lbl_plusRemolque"><input type="checkbox" id="plusRemolque"> Plus Remolque Bicicletas</label>
+          <label class="plus-item" id="lbl_plusFestivo"><input type="checkbox" id="plusFestivo"> Plus Día Festivo</label>
+          <label class="plus-item" id="lbl_plusDispCorte"><input type="checkbox" id="plusDispCorte"> Disp. Corte Máximo</label>
+          <label class="plus-item" id="lbl_plusPartidoEsp"><input type="checkbox" id="plusPartidoEsp"> P. T. Partido Esp.</label>
+          <label class="plus-item" id="lbl_plusNocturnidad"><input type="checkbox" id="plusNocturnidad" data-autoplus="nocturnidad"> Plus Nocturnidad</label>
+          <label class="plus-item" id="lbl_plusKmsPart"><input type="checkbox" id="plusKmsPart"> Kms particulares</label>
+          <label class="plus-item" id="lbl_plusOtros"><input type="checkbox" id="plusOtros"> Otros Conceptos</label>
+        </div>
+        <div id="plusesMotivoMsg" class="auto-hint" style="margin-top:8px;"></div>
+        <div class="form-group" style="margin-top:8px; margin-bottom:0;">
+          <label for="plusRemolqueDetalle">Detalle Remolque / Otros (si aplica)</label>
+          <input type="text" id="plusRemolqueDetalle" placeholder="Opcional">
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: VEHÍCULOS, REPOSTAJES E INCIDENCIAS -->
+    <section id="tab-vehiculos" class="tab-panel">
+      <div class="card">
+        <div class="card-header">Vehículo/s Utilizado/s</div>
+        <div id="vehiculosContainer"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Repostajes: Gasóleo / AdBlue</div>
+        <div id="repostajesContainer"></div>
+        <div style="margin-top:10px;">
+          <label>Estación de Servicio</label>
+          <div class="station-grid">
+            <label class="plus-item"><input type="checkbox" class="station-chk" value="Roselló"> Roselló</label>
+            <label class="plus-item"><input type="checkbox" class="station-chk" value="Hnos. Vivó"> Hnos. Vivó</label>
+            <label class="plus-item"><input type="checkbox" class="station-chk" value="ELEM (Ferreries)"> ELEM (Ferreries)</label>
+            <label class="plus-item"><input type="checkbox" class="station-chk" value="Mitjan Lloc"> Mitjan Lloc</label>
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:10px; margin-bottom:0;">
+          <label for="adblueLitros">AdBlue (litros)</label>
+          <input type="number" step="0.01" id="adblueLitros" placeholder="0.00">
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Incidencias y Objetos Perdidos</div>
+        <div class="form-group">
+          <label for="incidenciasServicio">Informe abreviado de incidencias (Dpto. Tráfico)</label>
+          <textarea id="incidenciasServicio" rows="2" placeholder="Ej: nada"></textarea>
+        </div>
+        <div class="grid-3">
+          <div class="form-group">
+            <label for="objPerdido">Objeto perdido</label>
+            <input type="text" id="objPerdido">
+          </div>
+          <div class="form-group">
+            <label for="objBus">Bus Nº</label>
+            <input type="text" id="objBus">
+          </div>
+          <div class="form-group">
+            <label for="objExpedicion">Expedición</label>
+            <input type="text" id="objExpedicion">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="objObs">Observaciones objeto</label>
+          <input type="text" id="objObs">
+        </div>
+
+        <hr style="border:none; border-top:1px solid #e2e8f0; margin:12px 0;">
+
+        <div class="form-group">
+          <label>Solicitud Libro de Reclamaciones</label>
+          <div class="grid-2" style="margin-top:4px;">
+            <label class="plus-item"><input type="radio" name="reclamacion" value="no" checked> No se ha producido</label>
+            <label class="plus-item"><input type="radio" name="reclamacion" value="si"> Sí se ha producido</label>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="hojaReclamacion">Hoja Reclamación Nº</label>
+            <input type="text" id="hojaReclamacion">
+          </div>
+          <div class="form-group">
+            <label for="libroReclamacion">Libro Reclamaciones Nº</label>
+            <input type="text" id="libroReclamacion">
+          </div>
+        </div>
+
+        <hr style="border:none; border-top:1px solid #e2e8f0; margin:12px 0;">
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="anomaliaBus">Anomalía Vehículo (Bus Nº)</label>
+            <input type="text" id="anomaliaBus">
+          </div>
+          <div class="form-group">
+            <label for="anomaliaDesc">Breve descripción anomalía</label>
+            <input type="text" id="anomaliaDesc">
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label for="sugerencias">Sugerencias, comentarios, propuestas de mejora</label>
+          <textarea id="sugerencias" rows="2"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: ARQUEO RECAUDACIÓN -->
+    <section id="tab-arqueo" class="tab-panel">
+      <div class="card">
+        <div class="card-header dark">
+          <span>Arqueo Recaudación (Billetes y Monedas)</span>
+          <button type="button" class="btn-sm" id="btnLimpiarArqueo" style="background:#334155; color:#fff;">Poner a 0</button>
+        </div>
+        <div id="arqueoRows"></div>
+
+        <div class="total-banner">
+          <span>TOTAL LIQUIDACIÓN:</span>
+          <strong id="totalBrutoArqueo">0,00 €</strong>
+        </div>
+
+        <div class="card-header" style="margin-top:14px;">A Descontar / Ajustes de Cuadre</div>
+        <p style="font-size:0.78rem; color:var(--muted); margin-bottom:10px;">
+          Introduce el concepto y el importe a descontar (ej. 5.50 resta 5,50 €). Si necesitas sumar una corrección, ponlo en negativo (ej. -5.50).
+        </p>
+        <div id="descuentosContainer"></div>
+
+        <div class="total-banner final">
+          <span>TOTAL FINAL:</span>
+          <strong id="totalFinalArqueo">0,00 €</strong>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: HISTORIAL -->
+    <section id="tab-historial" class="tab-panel">
+      <div class="card">
+        <div class="card-header">
+          <span>Partes Guardados en Dispositivo</span>
+          <button type="button" class="btn-sm" id="btnNuevoParte" style="background:var(--accent); color:#fff;">+ Nuevo Parte</button>
+        </div>
+        <div id="historialLista">
+          <p style="color:var(--muted); font-size:0.85rem;">Cargando registros...</p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="app-footer">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <polygon points="12,2 21,7 21,17 12,22 3,17 3,7" stroke="currentColor" stroke-width="1.8" fill="none"/>
+        <text x="12" y="15" text-anchor="middle" font-size="7.5" font-weight="700" fill="currentColor" font-family="sans-serif">MB</text>
+      </svg>
+      <span>medbasha</span>
+    </footer>
+  </div>
+
+  <!-- Bottom Bar -->
+  <div class="bottom-bar">
+    <button type="button" class="btn btn-outline" id="btnVerResumen">Resumen</button>
+    <button type="button" class="btn btn-success" id="btnGuardarParte">Guardar Parte</button>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast">Guardado correctamente</div>
+
+  <!-- Modal Bienvenida / Ayuda -->
+  <div id="modalTutorial" class="modal-backdrop">
+    <div class="modal-card">
+      <h2>Parte Diario Pro v1.1.1</h2>
+      <p>Tu asistente rápido para cuadrar la jornada, pluses y recaudación sin esperar cola en el ordenador:</p>
+      <ul>
+        <li><strong>Mínimo 6,00 h automático:</strong> Si tus servicios suman menos de 6 horas, la app calcula el <em>Ajuste</em> necesario para llegar a 6,00 h (puedes modificarlo cuando quieras).</li>
+        <li><strong>Dietas y Pluses inteligentes:</strong> Detecta automáticamente <em>Dieta Comida</em>, <em>Dieta Cena</em>, <em>Plus Nocturnidad</em> (22:00–06:00) y <em>Plus Turno Partido</em> (solo si no son únicamente servicios escolares <strong>Esc</strong>).</li>
+        <li><strong>Arqueo de Caja:</strong> Cuenta tus billetes y monedas y aplica hasta 4 descuentos o correcciones para tener el <strong>Total Final</strong> listo.</li>
+        <li><strong>Resumen para Ordenador:</strong> Pulsa <em>Resumen</em> abajo para ver y copiar todos los datos listos para transcribir.</li>
+      </ul>
+      <button type="button" id="btnEntendido" class="btn btn-success" style="width:100%;">¡Entendido!</button>
+    </div>
+  </div>
+
+  <!-- Modal Resumen Rápido -->
+  <div id="modalResumen" class="modal-backdrop">
+    <div class="modal-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <h2 style="margin:0;">Resumen para Ordenador</h2>
+        <button type="button" class="btn-sm" id="btnCerrarResumen" style="background:#e2e8f0;">Cerrar</button>
+      </div>
+      <div id="resumenContenido"></div>
+      <button type="button" id="btnCopiarResumen" class="btn btn-primary" style="width:100%; margin-top:8px;">Copiar Texto</button>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const APP_VERSION = '1.1.1';
+      const DB_NAME = 'ParteDiarioProDB';
+      const DB_VERSION = 1;
+      const STORE_PARTES = 'partes';
+      const STORE_CONFIG = 'config';
+
+      const DENOMINACIONES = [500, 200, 100, 50, 20, 10, 5, 2, 1, 0.50, 0.20, 0.10, 0.05, 0.02, 0.01];
+      let db = null;
+      let currentParteId = null;
+
+      // Flags para respetar ediciones manuales del usuario
+      let manualAjuste = false;
+      let manualPluses = {
+        dietaComida: false,
+        dietaCena: false,
+        turnoPartido: false,
+        nocturnidad: false
+      };
+
+      // Solicitar almacenamiento persistente
+      if (navigator.storage && navigator.storage.persist) {
+        navigator.storage.persist().catch(() => {});
+      }
+
+      // Inicializar IndexedDB
+      function initDB() {
+        return new Promise((resolve, reject) => {
+          const request = indexedDB.open(DB_NAME, DB_VERSION);
+          request.onupgradeneeded = (e) => {
+            const database = e.target.result;
+            if (!database.objectStoreNames.contains(STORE_PARTES)) {
+              database.createObjectStore(STORE_PARTES, { keyPath: 'id' });
+            }
+            if (!database.objectStoreNames.contains(STORE_CONFIG)) {
+              database.createObjectStore(STORE_CONFIG, { keyPath: 'key' });
+            }
+          };
+          request.onsuccess = (e) => {
+            db = e.target.result;
+            resolve(db);
+          };
+          request.onerror = (e) => reject(e.target.error);
+        });
+      }
+
+      function dbGet(storeName, key) {
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(storeName, 'readonly');
+          const req = tx.objectStore(storeName).get(key);
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        });
+      }
+
+      function dbPut(storeName, data) {
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(storeName, 'readwrite');
+          const req = tx.objectStore(storeName).put(data);
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        });
+      }
+
+      function dbGetAll(storeName) {
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(storeName, 'readonly');
+          const req = tx.objectStore(storeName).getAll();
+          req.onsuccess = () => resolve(req.result || []);
+          req.onerror = () => reject(req.error);
+        });
+      }
+
+      function dbDelete(storeName, key) {
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(storeName, 'readwrite');
+          const req = tx.objectStore(storeName).delete(key);
+          req.onsuccess = () => resolve();
+          req.onerror = () => reject(req.error);
+        });
+      }
+
+      // Utilidades formato y tiempo
+      function formatNum(num) {
+        return Number(num || 0).toLocaleString('es-ES', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+      }
+
+      function timeToMinutes(timeStr) {
+        if (!timeStr) return null;
+        const [h, m] = timeStr.split(':').map(Number);
+        return h * 60 + m;
+      }
+
+      function calcDiffHours(start, end) {
+        const m1 = timeToMinutes(start);
+        const m2 = timeToMinutes(end);
+        if (m1 === null || m2 === null) return 0;
+        let diff = m2 - m1;
+        if (diff < 0) diff += 24 * 60;
+        return Math.round((diff / 60) * 100) / 100;
+      }
+
+      // Comprobar si un tramo [startStr, endStr] toca horario nocturno (22:00 a 06:00)
+      function hasNightTime(startStr, endStr) {
+        const m1 = timeToMinutes(startStr);
+        const m2 = timeToMinutes(endStr);
+        if (m1 === null || m2 === null) return false;
+        let endAdj = m2;
+        if (endAdj <= m1) endAdj += 1440;
+
+        const nightWindows = [
+          [0, 360],
+          [1320, 1800],
+          [2760, 2880]
+        ];
+        return nightWindows.some(([nStart, nEnd]) => Math.max(m1, nStart) < Math.min(endAdj, nEnd));
+      }
+
+      function showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2400);
+      }
+
+      function updatePlusHighlights() {
+        document.querySelectorAll('.plus-item input[type="checkbox"]').forEach(chk => {
+          const parent = chk.closest('.plus-item');
+          if (parent) {
+            parent.classList.toggle('checked-highlight', chk.checked);
+          }
+        });
+      }
+
+      // Renderizado dinámico de bloques
+      function buildUI() {
+        // 1. 5 Servicios
+        const servContainer = document.getElementById('serviciosContainer');
+        for (let i = 1; i <= 5; i++) {
+          const div = document.createElement('div');
+          div.className = 'service-item';
+          div.innerHTML = `
+            <div class="service-top">
+              <span class="badge">Servicio ${i}</span>
+              <div class="type-checks">
+                <label class="check-pill"><input type="checkbox" id="srvTipoR_${i}"> R</label>
+                <label class="check-pill"><input type="checkbox" id="srvTipoEsc_${i}"> Esc</label>
+                <label class="check-pill"><input type="checkbox" id="srvTipoD_${i}"> D</label>
+              </div>
+            </div>
+            <div class="service-times">
+              <div>
+                <label>Hora Inicio</label>
+                <input type="time" id="srvIn_${i}" data-srv="${i}">
+              </div>
+              <div>
+                <label>Hora Fin</label>
+                <input type="time" id="srvOut_${i}" data-srv="${i}">
+              </div>
+              <div>
+                <label>Horas</label>
+                <input type="text" id="srvTotal_${i}" readonly value="0,00">
+              </div>
+            </div>
+            <div class="service-desc">
+              <div>
+                <label>Nº PAX</label>
+                <input type="number" id="srvPax_${i}" placeholder="0">
+              </div>
+              <div>
+                <label>Descripción Servicio</label>
+                <input type="text" id="srvDesc_${i}" placeholder="Ej: ESC FP IES PASQ CALBO">
+              </div>
+            </div>
+          `;
+          servContainer.appendChild(div);
+        }
+
+        // 2. 5 Vehículos
+        const vehContainer = document.getElementById('vehiculosContainer');
+        for (let i = 1; i <= 5; i++) {
+          const div = document.createElement('div');
+          div.className = 'vehicle-block';
+          div.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <span class="badge">Servicio ${i}</span>
+              <span id="kmRecorridos_${i}" style="font-size:0.78rem; font-weight:700; color:var(--accent);">0 km</span>
+            </div>
+            <div class="grid-3">
+              <div class="form-group" style="margin:0;">
+                <label>BUS Nº</label>
+                <input type="text" id="vehBus_${i}" placeholder="Ej: 76">
+              </div>
+              <div class="form-group" style="margin:0;">
+                <label>Km Inicial</label>
+                <input type="number" id="vehKmIn_${i}" data-veh="${i}" placeholder="0">
+              </div>
+              <div class="form-group" style="margin:0;">
+                <label>Km Final</label>
+                <input type="number" id="vehKmOut_${i}" data-veh="${i}" placeholder="0">
+              </div>
+            </div>
+            <div class="grid-2" style="margin-top:8px;">
+              <div class="form-group" style="margin:0;">
+                <label>Aceite añadido (ltrs)</label>
+                <input type="number" step="0.1" id="vehAceite_${i}" placeholder="0">
+              </div>
+              <div class="form-group" style="margin:0;">
+                <label>Puente de Lavado</label>
+                <select id="vehLavado_${i}">
+                  <option value="NO">NO</option>
+                  <option value="SI">SÍ</option>
+                </select>
+              </div>
+            </div>
+          `;
+          vehContainer.appendChild(div);
+        }
+
+        // 3. 5 Repostajes
+        const repContainer = document.getElementById('repostajesContainer');
+        for (let i = 1; i <= 5; i++) {
+          const div = document.createElement('div');
+          div.className = 'vehicle-block';
+          div.innerHTML = `
+            <div style="margin-bottom:6px;"><span class="badge">Repostaje Servicio ${i}</span></div>
+            <div class="grid-3">
+              <div class="form-group" style="margin:0;">
+                <label>Gasoil (ltrs)</label>
+                <input type="number" step="0.01" id="repLitros_${i}" placeholder="0.00">
+              </div>
+              <div class="form-group" style="margin:0;">
+                <label>Importe (€)</label>
+                <input type="number" step="0.01" id="repEuros_${i}" placeholder="0.00">
+              </div>
+              <div class="form-group" style="margin:0;">
+                <label>Kms repostaje</label>
+                <input type="number" id="repKms_${i}" placeholder="0">
+              </div>
+            </div>
+          `;
+          repContainer.appendChild(div);
+        }
+
+        // 4. Arqueo Billetes y Monedas
+        const arqContainer = document.getElementById('arqueoRows');
+        DENOMINACIONES.forEach((valor, idx) => {
+          const row = document.createElement('div');
+          row.className = 'cash-row';
+          row.innerHTML = `
+            <div class="denom-label">${formatNum(valor)} € =</div>
+            <input type="number" inputmode="numeric" min="0" id="cashQty_${idx}" data-val="${valor}" placeholder="Cant.">
+            <div class="cash-subtotal" id="cashSub_${idx}">0,00 €</div>
+          `;
+          arqContainer.appendChild(row);
+        });
+
+        // 5. 4 Líneas A Descontar
+        const descContainer = document.getElementById('descuentosContainer');
+        for (let i = 1; i <= 4; i++) {
+          const row = document.createElement('div');
+          row.className = 'discount-row';
+          row.innerHTML = `
+            <input type="text" id="descConcepto_${i}" placeholder="Concepto ${i} (opcional)">
+            <input type="number" step="0.01" id="descImporte_${i}" placeholder="0,00 €">
+          `;
+          descContainer.appendChild(row);
+        }
+      }
+
+      // Motor de Reglas de Jornada, Dietas y Pluses
+      function evaluarReglasAutomaticas(sumaServicios, serviciosActivos) {
+        const ajusteInput = document.getElementById('ajusteHoras');
+        const ajusteMsg = document.getElementById('ajusteAutoMsg');
+
+        // 1. Ajuste mínimo a 6,00 horas si hay servicios > 0 y suma < 6
+        if (!manualAjuste) {
+          if (sumaServicios > 0 && sumaServicios < 6) {
+            const diffMin = Math.round((6 - sumaServicios) * 100) / 100;
+            ajusteInput.value = diffMin.toFixed(2);
+            ajusteMsg.textContent = `Ajuste automático (+${formatNum(diffMin)} h) para llegar al mínimo de 6,00 h.`;
+          } else {
+            ajusteInput.value = '0';
+            ajusteMsg.textContent = '';
+          }
+        } else {
+          ajusteMsg.textContent = 'Ajuste editado manualmente (pulsa "Min 6h" para recalcular).';
+        }
+
+        const ajusteActual = parseFloat(ajusteInput.value) || 0;
+        const totalHoras = Math.round((sumaServicios + ajusteActual) * 100) / 100;
+
+        // Recopilar horarios globales (servicios + fichajes)
+        const f1In = document.getElementById('fichaje1In').value;
+        const f1Out = document.getElementById('fichaje1Out').value;
+        const f2In = document.getElementById('fichaje2In').value;
+        const f2Out = document.getElementById('fichaje2Out').value;
+
+        let earliestStartMin = null;
+        let latestEndMin = null;
+        let hasNight = false;
+
+        [[f1In, f1Out], [f2In, f2Out]].forEach(([s, e]) => {
+          if (s && e && hasNightTime(s, e)) hasNight = true;
+          const ms = timeToMinutes(s);
+          const me = timeToMinutes(e);
+          if (ms !== null && (earliestStartMin === null || ms < earliestStartMin)) earliestStartMin = ms;
+          if (me !== null) {
+            const adjE = (ms !== null && me < ms) ? me + 1440 : me;
+            if (latestEndMin === null || adjE > latestEndMin) latestEndMin = adjE;
+          }
+        });
+
+        serviciosActivos.forEach(s => {
+          if (s.inicio && s.fin && hasNightTime(s.inicio, s.fin)) hasNight = true;
+          const ms = timeToMinutes(s.inicio);
+          const me = timeToMinutes(s.fin);
+          if (ms !== null && (earliestStartMin === null || ms < earliestStartMin)) earliestStartMin = ms;
+          if (me !== null) {
+            const adjE = (ms !== null && me < ms) ? me + 1440 : me;
+            if (latestEndMin === null || adjE > latestEndMin) latestEndMin = adjE;
+          }
+        });
+
+        const motivos = [];
+
+        // 2. Dieta Comida
+        let autoComida = false;
+        if (latestEndMin !== null && sumaServicios > 0) {
+          if (totalHoras > 9) {
+            autoComida = true;
+            motivos.push('Dieta Comida (>9h)');
+          } else if (totalHoras > 6 && latestEndMin >= 930) {
+            autoComida = true;
+            motivos.push('Dieta Comida (>6h y fin ≥15:30)');
+          } else if (latestEndMin === 900 || latestEndMin === 930) {
+            autoComida = true;
+            motivos.push('Dieta Comida (fin 15:00/15:30)');
+          }
+        }
+        if (!manualPluses.dietaComida) {
+          document.getElementById('plusDietaComida').checked = autoComida;
+        }
+
+        // 3. Dieta Cena
+        let autoCena = false;
+        if (latestEndMin !== null && sumaServicios > 0) {
+          if (latestEndMin >= 1380) {
+            autoCena = true;
+            motivos.push('Dieta Cena (fin ≥23:00)');
+          }
+        }
+        if (!manualPluses.dietaCena) {
+          document.getElementById('plusDietaCena').checked = autoCena;
+        }
+
+        // 4. Plus Nocturnidad (22:00 a 06:00)
+        if (hasNight) {
+          motivos.push('Nocturnidad (22:00-06:00)');
+        }
+        if (!manualPluses.nocturnidad) {
+          document.getElementById('plusNocturnidad').checked = hasNight;
+        }
+
+        // 5. Plus Turno Partido (solo si no son únicamente servicios escolares Esc)
+        let isSplitShift = false;
+        if (f1In && f1Out && f2In && f2Out) {
+          isSplitShift = true;
+        } else if (serviciosActivos.length >= 2) {
+          const sorted = [...serviciosActivos]
+            .filter(s => s.inicio && s.fin)
+            .sort((a, b) => timeToMinutes(a.inicio) - timeToMinutes(b.inicio));
+          for (let j = 0; j < sorted.length - 1; j++) {
+            const gap = timeToMinutes(sorted[j + 1].inicio) - timeToMinutes(sorted[j].fin);
+            if (gap > 30) {
+              isSplitShift = true;
+              break;
+            }
+          }
+        }
+
+        let autoPartido = false;
+        if (isSplitShift && serviciosActivos.length > 0) {
+          const allOnlyEscolar = serviciosActivos.every(s => s.esc && !s.r && !s.d);
+          if (!allOnlyEscolar) {
+            autoPartido = true;
+            motivos.push('Turno Partido (incluye Línea/D)');
+          } else {
+            motivos.push('Partida solo Escolar (no se marca plus)');
+          }
+        }
+        if (!manualPluses.turnoPartido) {
+          document.getElementById('plusTurnoPartido').checked = autoPartido;
+        }
+
+        const motivoEl = document.getElementById('plusesMotivoMsg');
+        motivoEl.textContent = motivos.length ? `Detectado: ${motivos.join(' · ')}` : '';
+
+        return totalHoras;
+      }
+
+      // Recálculos automáticos globales
+      function recalcularTodo() {
+        const f1 = calcDiffHours(document.getElementById('fichaje1In').value, document.getElementById('fichaje1Out').value);
+        const f2 = calcDiffHours(document.getElementById('fichaje2In').value, document.getElementById('fichaje2Out').value);
+        document.getElementById('totalFichadorBadge').textContent = `${formatNum(f1 + f2)} h`;
+
+        let sumaServicios = 0;
+        const serviciosActivos = [];
+        for (let i = 1; i <= 5; i++) {
+          const inicio = document.getElementById(`srvIn_${i}`).value;
+          const fin = document.getElementById(`srvOut_${i}`).value;
+          const h = calcDiffHours(inicio, fin);
+          document.getElementById(`srvTotal_${i}`).value = formatNum(h);
+          sumaServicios += h;
+
+          if (inicio || fin) {
+            serviciosActivos.push({
+              inicio,
+              fin,
+              r: document.getElementById(`srvTipoR_${i}`).checked,
+              esc: document.getElementById(`srvTipoEsc_${i}`).checked,
+              d: document.getElementById(`srvTipoD_${i}`).checked
+            });
+          }
+        }
+        sumaServicios = Math.round(sumaServicios * 100) / 100;
+
+        const totalHoras = evaluarReglasAutomaticas(sumaServicios, serviciosActivos);
+
+        document.getElementById('subtotalServiciosBadge').textContent = `${formatNum(sumaServicios)} h`;
+        document.getElementById('sumaServiciosInput').value = formatNum(sumaServicios);
+        document.getElementById('totalHorasFinal').textContent = formatNum(totalHoras);
+
+        updatePlusHighlights();
+
+        for (let i = 1; i <= 5; i++) {
+          const kIn = parseFloat(document.getElementById(`vehKmIn_${i}`).value) || 0;
+          const kOut = parseFloat(document.getElementById(`vehKmOut_${i}`).value) || 0;
+          const diffKm = kOut > kIn ? (kOut - kIn) : 0;
+          document.getElementById(`kmRecorridos_${i}`).textContent = `${diffKm.toLocaleString('es-ES')} km`;
+        }
+
+        let totalBruto = 0;
+        DENOMINACIONES.forEach((valor, idx) => {
+          const qty = parseInt(document.getElementById(`cashQty_${idx}`).value, 10) || 0;
+          const sub = Math.round(qty * valor * 100) / 100;
+          totalBruto += sub;
+          document.getElementById(`cashSub_${idx}`).textContent = `${formatNum(sub)} €`;
+        });
+        totalBruto = Math.round(totalBruto * 100) / 100;
+        document.getElementById('totalBrutoArqueo').textContent = `${formatNum(totalBruto)} €`;
+
+        let totalDescuento = 0;
+        for (let i = 1; i <= 4; i++) {
+          const val = parseFloat(document.getElementById(`descImporte_${i}`).value) || 0;
+          totalDescuento += val;
+        }
+        const totalFinal = Math.round((totalBruto - totalDescuento) * 100) / 100;
+        document.getElementById('totalFinalArqueo').textContent = `${formatNum(totalFinal)} €`;
+      }
+
+      function collectFormData() {
+        const fecha = document.getElementById('parteFecha').value || new Date().toISOString().split('T')[0];
+        const id = currentParteId || `parte_${fecha}_${Date.now()}`;
+
+        const servicios = [];
+        for (let i = 1; i <= 5; i++) {
+          servicios.push({
+            r: document.getElementById(`srvTipoR_${i}`).checked,
+            esc: document.getElementById(`srvTipoEsc_${i}`).checked,
+            d: document.getElementById(`srvTipoD_${i}`).checked,
+            inicio: document.getElementById(`srvIn_${i}`).value,
+            fin: document.getElementById(`srvOut_${i}`).value,
+            pax: document.getElementById(`srvPax_${i}`).value,
+            desc: document.getElementById(`srvDesc_${i}`).value
+          });
+        }
+
+        const vehiculos = [];
+        for (let i = 1; i <= 5; i++) {
+          vehiculos.push({
+            bus: document.getElementById(`vehBus_${i}`).value,
+            kmIn: document.getElementById(`vehKmIn_${i}`).value,
+            kmOut: document.getElementById(`vehKmOut_${i}`).value,
+            aceite: document.getElementById(`vehAceite_${i}`).value,
+            lavado: document.getElementById(`vehLavado_${i}`).value
+          });
+        }
+
+        const repostajes = [];
+        for (let i = 1; i <= 5; i++) {
+          repostajes.push({
+            litros: document.getElementById(`repLitros_${i}`).value,
+            euros: document.getElementById(`repEuros_${i}`).value,
+            kms: document.getElementById(`repKms_${i}`).value
+          });
+        }
+
+        const estaciones = Array.from(document.querySelectorAll('.station-chk:checked')).map(c => c.value);
+
+        const arqueo = DENOMINACIONES.map((valor, idx) => ({
+          valor,
+          qty: document.getElementById(`cashQty_${idx}`).value
+        }));
+
+        const descuentos = [];
+        for (let i = 1; i <= 4; i++) {
+          descuentos.push({
+            concepto: document.getElementById(`descConcepto_${i}`).value,
+            importe: document.getElementById(`descImporte_${i}`).value
+          });
+        }
+
+        const recRadio = document.querySelector('input[name="reclamacion"]:checked');
+
+        return {
+          id,
+          updatedAt: new Date().toISOString(),
+          manualAjuste,
+          manualPluses: { ...manualPluses },
+          nombre: document.getElementById('conductorNombre').value,
+          fecha,
+          fichaje1In: document.getElementById('fichaje1In').value,
+          fichaje1Out: document.getElementById('fichaje1Out').value,
+          fichaje2In: document.getElementById('fichaje2In').value,
+          fichaje2Out: document.getElementById('fichaje2Out').value,
+          servicios,
+          ajusteHoras: document.getElementById('ajusteHoras').value,
+          totalHorasTexto: document.getElementById('totalHorasFinal').textContent,
+          formacionIn: document.getElementById('formacionIn').value,
+          formacionOut: document.getElementById('formacionOut').value,
+          formacionDesc: document.getElementById('formacionDesc').value,
+          pluses: {
+            dietaComida: document.getElementById('plusDietaComida').checked,
+            turnoPartido: document.getElementById('plusTurnoPartido').checked,
+            dietaCena: document.getElementById('plusDietaCena').checked,
+            remolque: document.getElementById('plusRemolque').checked,
+            festivo: document.getElementById('plusFestivo').checked,
+            dispCorte: document.getElementById('plusDispCorte').checked,
+            partidoEsp: document.getElementById('plusPartidoEsp').checked,
+            nocturnidad: document.getElementById('plusNocturnidad').checked,
+            kmsPart: document.getElementById('plusKmsPart').checked,
+            otros: document.getElementById('plusOtros').checked,
+            remolqueDetalle: document.getElementById('plusRemolqueDetalle').value
+          },
+          vehiculos,
+          repostajes,
+          estaciones,
+          adblueLitros: document.getElementById('adblueLitros').value,
+          incidenciasServicio: document.getElementById('incidenciasServicio').value,
+          objPerdido: document.getElementById('objPerdido').value,
+          objBus: document.getElementById('objBus').value,
+          objExpedicion: document.getElementById('objExpedicion').value,
+          objObs: document.getElementById('objObs').value,
+          reclamacion: recRadio ? recRadio.value : 'no',
+          hojaReclamacion: document.getElementById('hojaReclamacion').value,
+          libroReclamacion: document.getElementById('libroReclamacion').value,
+          anomaliaBus: document.getElementById('anomaliaBus').value,
+          anomaliaDesc: document.getElementById('anomaliaDesc').value,
+          sugerencias: document.getElementById('sugerencias').value,
+          arqueo,
+          descuentos,
+          totalBrutoTexto: document.getElementById('totalBrutoArqueo').textContent,
+          totalFinalTexto: document.getElementById('totalFinalArqueo').textContent
+        };
+      }
+
+      function loadFormData(data) {
+        currentParteId = data.id || null;
+        manualAjuste = !!data.manualAjuste;
+        manualPluses = Object.assign(
+          { dietaComida: false, dietaCena: false, turnoPartido: false, nocturnidad: false },
+          data.manualPluses || {}
+        );
+
+        document.getElementById('conductorNombre').value = data.nombre || '';
+        document.getElementById('parteFecha').value = data.fecha || new Date().toISOString().split('T')[0];
+        document.getElementById('fichaje1In').value = data.fichaje1In || '';
+        document.getElementById('fichaje1Out').value = data.fichaje1Out || '';
+        document.getElementById('fichaje2In').value = data.fichaje2In || '';
+        document.getElementById('fichaje2Out').value = data.fichaje2Out || '';
+
+        (data.servicios || []).forEach((s, idx) => {
+          const i = idx + 1;
+          document.getElementById(`srvTipoR_${i}`).checked = !!s.r;
+          document.getElementById(`srvTipoEsc_${i}`).checked = !!s.esc;
+          document.getElementById(`srvTipoD_${i}`).checked = !!s.d;
+          document.getElementById(`srvIn_${i}`).value = s.inicio || '';
+          document.getElementById(`srvOut_${i}`).value = s.fin || '';
+          document.getElementById(`srvPax_${i}`).value = s.pax || '';
+          document.getElementById(`srvDesc_${i}`).value = s.desc || '';
+        });
+
+        document.getElementById('ajusteHoras').value = data.ajusteHoras || '0';
+        document.getElementById('formacionIn').value = data.formacionIn || '';
+        document.getElementById('formacionOut').value = data.formacionOut || '';
+        document.getElementById('formacionDesc').value = data.formacionDesc || '';
+
+        const p = data.pluses || {};
+        document.getElementById('plusDietaComida').checked = !!p.dietaComida;
+        document.getElementById('plusTurnoPartido').checked = !!p.turnoPartido;
+        document.getElementById('plusDietaCena').checked = !!p.dietaCena;
+        document.getElementById('plusRemolque').checked = !!p.remolque;
+        document.getElementById('plusFestivo').checked = !!p.festivo;
+        document.getElementById('plusDispCorte').checked = !!p.dispCorte;
+        document.getElementById('plusPartidoEsp').checked = !!p.partidoEsp;
+        document.getElementById('plusNocturnidad').checked = !!p.nocturnidad;
+        document.getElementById('plusKmsPart').checked = !!p.kmsPart;
+        document.getElementById('plusOtros').checked = !!p.otros;
+        document.getElementById('plusRemolqueDetalle').value = p.remolqueDetalle || '';
+
+        (data.vehiculos || []).forEach((v, idx) => {
+          const i = idx + 1;
+          document.getElementById(`vehBus_${i}`).value = v.bus || '';
+          document.getElementById(`vehKmIn_${i}`).value = v.kmIn || '';
+          document.getElementById(`vehKmOut_${i}`).value = v.kmOut || '';
+          document.getElementById(`vehAceite_${i}`).value = v.aceite || '';
+          document.getElementById(`vehLavado_${i}`).value = v.lavado || 'NO';
+        });
+
+        (data.repostajes || []).forEach((r, idx) => {
+          const i = idx + 1;
+          document.getElementById(`repLitros_${i}`).value = r.litros || '';
+          document.getElementById(`repEuros_${i}`).value = r.euros || '';
+          document.getElementById(`repKms_${i}`).value = r.kms || '';
+        });
+
+        const estSet = new Set(data.estaciones || []);
+        document.querySelectorAll('.station-chk').forEach(chk => {
+          chk.checked = estSet.has(chk.value);
+        });
+
+        document.getElementById('adblueLitros').value = data.adblueLitros || '';
+        document.getElementById('incidenciasServicio').value = data.incidenciasServicio || '';
+        document.getElementById('objPerdido').value = data.objPerdido || '';
+        document.getElementById('objBus').value = data.objBus || '';
+        document.getElementById('objExpedicion').value = data.objExpedicion || '';
+        document.getElementById('objObs').value = data.objObs || '';
+
+        const recVal = data.reclamacion || 'no';
+        const radio = document.querySelector(`input[name="reclamacion"][value="${recVal}"]`);
+        if (radio) radio.checked = true;
+        document.getElementById('hojaReclamacion').value = data.hojaReclamacion || '';
+        document.getElementById('libroReclamacion').value = data.libroReclamacion || '';
+        document.getElementById('anomaliaBus').value = data.anomaliaBus || '';
+        document.getElementById('anomaliaDesc').value = data.anomaliaDesc || '';
+        document.getElementById('sugerencias').value = data.sugerencias || '';
+
+        (data.arqueo || []).forEach((a, idx) => {
+          const el = document.getElementById(`cashQty_${idx}`);
+          if (el) el.value = a.qty || '';
+        });
+
+        (data.descuentos || []).forEach((d, idx) => {
+          const i = idx + 1;
+          document.getElementById(`descConcepto_${i}`).value = d.concepto || '';
+          document.getElementById(`descImporte_${i}`).value = d.importe || '';
+        });
+
+        recalcularTodo();
+      }
+
+      async function resetNuevoParte() {
+        const nombreCfg = await dbGet(STORE_CONFIG, 'conductorNombre');
+        currentParteId = null;
+        manualAjuste = false;
+        manualPluses = { dietaComida: false, dietaCena: false, turnoPartido: false, nocturnidad: false };
+        loadFormData({
+          nombre: nombreCfg ? nombreCfg.value : '',
+          fecha: new Date().toISOString().split('T')[0],
+          manualAjuste: false,
+          manualPluses: { ...manualPluses },
+          servicios: Array(5).fill({}),
+          vehiculos: Array(5).fill({}),
+          repostajes: Array(5).fill({}),
+          arqueo: DENOMINACIONES.map(v => ({ valor: v, qty: '' })),
+          descuentos: Array(4).fill({})
+        });
+      }
+
+      async function renderHistorial() {
+        const lista = document.getElementById('historialLista');
+        const partes = await dbGetAll(STORE_PARTES);
+        partes.sort((a, b) => (b.fecha || '').localeCompare(a.fecha || '') || (b.updatedAt || '').localeCompare(a.updatedAt || ''));
+
+        if (!partes.length) {
+          lista.innerHTML = '<p style="color:var(--muted); font-size:0.85rem;">Aún no hay partes guardados.</p>';
+          return;
+        }
+
+        lista.innerHTML = '';
+        partes.forEach(p => {
+          const item = document.createElement('div');
+          item.className = 'history-item';
+          item.innerHTML = `
+            <div class="history-info">
+              <strong>${p.fecha || 'Sin fecha'} · ${p.totalHorasTexto || '0,00'} h</strong>
+              <small>Liquidación Final: <b>${p.totalFinalTexto || '0,00 €'}</b></small>
+            </div>
+            <div class="history-actions">
+              <button type="button" class="btn-sm" style="background:var(--accent); color:#fff;" data-load="${p.id}">Abrir</button>
+              <button type="button" class="btn-sm" style="background:#fee2e2; color:var(--danger);" data-del="${p.id}">Borrar</button>
+            </div>
+          `;
+          lista.appendChild(item);
+        });
+
+        lista.querySelectorAll('[data-load]').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const found = await dbGet(STORE_PARTES, btn.dataset.load);
+            if (found) {
+              loadFormData(found);
+              switchTab('tab-jornada');
+              showToast('Parte cargado');
+            }
+          });
+        });
+
+        lista.querySelectorAll('[data-del]').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            await dbDelete(STORE_PARTES, btn.dataset.del);
+            renderHistorial();
+            showToast('Parte eliminado');
+          });
+        });
+      }
+
+      function switchTab(tabId) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === tabId));
+        if (tabId === 'tab-historial') renderHistorial();
+      }
+
+      function buildResumenHTML(data) {
+        const plusesActivos = [];
+        if (data.pluses.dietaComida) plusesActivos.push('Dieta Comida');
+        if (data.pluses.dietaCena) plusesActivos.push('Dieta Cena');
+        if (data.pluses.turnoPartido) plusesActivos.push('Plus Turno Partido');
+        if (data.pluses.nocturnidad) plusesActivos.push('Plus Nocturnidad');
+        if (data.pluses.festivo) plusesActivos.push('Plus Festivo');
+        if (data.pluses.remolque) plusesActivos.push('Plus Remolque');
+        if (data.pluses.dispCorte) plusesActivos.push('Disp. Corte Máx.');
+        if (data.pluses.partidoEsp) plusesActivos.push('P.T. Partido Esp.');
+        if (data.pluses.kmsPart) plusesActivos.push('Kms Particulares');
+        if (data.pluses.otros) plusesActivos.push('Otros Conceptos');
+
+        let html = `<table class="summary-table">
+          <tr><td>Fecha</td><td>${data.fecha}</td></tr>
+          <tr><td>Conductor</td><td>${data.nombre || '-'}</td></tr>
+          <tr><td>Fichaje 1 / 2</td><td>${data.fichaje1In || '--:--'}-${data.fichaje1Out || '--:--'} | ${data.fichaje2In || '--:--'}-${data.fichaje2Out || '--:--'}</td></tr>
+          <tr><td>Ajuste / Total Horas</td><td>${formatNum(data.ajusteHoras)} h / ${data.totalHorasTexto} h</td></tr>
+          <tr><td>Pluses / Dietas</td><td>${plusesActivos.length ? plusesActivos.join(', ') : 'Ninguno'}</td></tr>
+        </table>`;
+
+        const srvs = data.servicios.filter(s => s.inicio || s.fin || s.desc);
+        if (srvs.length) {
+          html += `<p style="font-weight:700; font-size:0.82rem; margin:6px 0;">Servicios:</p><table class="summary-table">`;
+          srvs.forEach((s, i) => {
+            const tipos = [s.r ? 'R' : '', s.esc ? 'Esc' : '', s.d ? 'D' : ''].filter(Boolean).join('/');
+            html += `<tr><td>S${i + 1} (${s.inicio}-${s.fin}) [${tipos}]</td><td>${s.desc || ''}</td></tr>`;
+          });
+          html += `</table>`;
+        }
+
+        const vehs = data.vehiculos.filter(v => v.bus || v.kmIn || v.kmOut);
+        if (vehs.length) {
+          html += `<p style="font-weight:700; font-size:0.82rem; margin:6px 0;">Vehículos:</p><table class="summary-table">`;
+          vehs.forEach((v, i) => {
+            html += `<tr><td>S${i + 1} · Bus ${v.bus || '-'}</td><td>${v.kmIn || 0} → ${v.kmOut || 0} (Lav: ${v.lavado})</td></tr>`;
+          });
+          html += `</table>`;
+        }
+
+        const cashActivos = data.arqueo.filter(a => Number(a.qty) > 0);
+        html += `<p style="font-weight:700; font-size:0.82rem; margin:6px 0;">Arqueo Recaudación:</p><table class="summary-table">`;
+        cashActivos.forEach(a => {
+          html += `<tr><td>${formatNum(a.valor)} € x ${a.qty}</td><td>${formatNum(a.valor * a.qty)} €</td></tr>`;
+        });
+        html += `<tr><td>TOTAL LIQUIDACIÓN</td><td>${data.totalBrutoTexto}</td></tr>`;
+        data.descuentos.filter(d => d.concepto || Number(d.importe) !== 0).forEach(d => {
+          html += `<tr><td>Desc: ${d.concepto || 'Ajuste'}</td><td>-${formatNum(d.importe)} €</td></tr>`;
+        });
+        html += `<tr style="background:#e0f2fe;"><td><strong>TOTAL FINAL</strong></td><td><strong>${data.totalFinalTexto}</strong></td></tr></table>`;
+        return html;
+      }
+
+      // Eventos
+      document.addEventListener('DOMContentLoaded', async () => {
+        buildUI();
+        await initDB();
+
+        const tutSeen = await dbGet(STORE_CONFIG, 'tutorial_seen_v1');
+        if (!tutSeen || !tutSeen.value) {
+          document.getElementById('modalTutorial').classList.add('open');
+        }
+
+        const lastDraft = await dbGet(STORE_CONFIG, 'current_draft');
+        if (lastDraft && lastDraft.value) {
+          loadFormData(lastDraft.value);
+        } else {
+          await resetNuevoParte();
+        }
+
+        document.getElementById('ajusteHoras').addEventListener('input', () => {
+          manualAjuste = true;
+        });
+
+        document.getElementById('btnAutoAjuste6').addEventListener('click', async () => {
+          manualAjuste = false;
+          recalcularTodo();
+          await dbPut(STORE_CONFIG, { key: 'current_draft', value: collectFormData() });
+          showToast('Ajuste mínimo 6h recalculado');
+        });
+
+        document.querySelectorAll('[data-autoplus]').forEach(chk => {
+          chk.addEventListener('change', () => {
+            const key = chk.dataset.autoplus;
+            manualPluses[key] = true;
+            updatePlusHighlights();
+          });
+        });
+
+        document.getElementById('btnRecalcularPluses').addEventListener('click', async () => {
+          manualPluses = { dietaComida: false, dietaCena: false, turnoPartido: false, nocturnidad: false };
+          recalcularTodo();
+          await dbPut(STORE_CONFIG, { key: 'current_draft', value: collectFormData() });
+          showToast('Pluses y dietas recalculados');
+        });
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+          btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+        });
+
+        document.body.addEventListener('input', async (e) => {
+          if (e.target && e.target.id === 'ajusteHoras') manualAjuste = true;
+          recalcularTodo();
+          const data = collectFormData();
+          await dbPut(STORE_CONFIG, { key: 'current_draft', value: data });
+          if (data.nombre) {
+            await dbPut(STORE_CONFIG, { key: 'conductorNombre', value: data.nombre });
+          }
+        });
+
+        document.body.addEventListener('change', async () => {
+          recalcularTodo();
+          const data = collectFormData();
+          await dbPut(STORE_CONFIG, { key: 'current_draft', value: data });
+        });
+
+        document.getElementById('btnGuardarParte').addEventListener('click', async () => {
+          const data = collectFormData();
+          currentParteId = data.id;
+          await dbPut(STORE_PARTES, data);
+          await dbPut(STORE_CONFIG, { key: 'current_draft', value: data });
+          showToast('Parte guardado en el historial');
+        });
+
+        document.getElementById('btnNuevoParte').addEventListener('click', async () => {
+          await resetNuevoParte();
+          const data = collectFormData();
+          await dbPut(STORE_CONFIG, { key: 'current_draft', value: data });
+          switchTab('tab-jornada');
+          showToast('Nuevo parte listo');
+        });
+
+        document.getElementById('btnLimpiarArqueo').addEventListener('click', async () => {
+          DENOMINACIONES.forEach((_, idx) => {
+            document.getElementById(`cashQty_${idx}`).value = '';
+          });
+          for (let i = 1; i <= 4; i++) {
+            document.getElementById(`descConcepto_${i}`).value = '';
+            document.getElementById(`descImporte_${i}`).value = '';
+          }
+          recalcularTodo();
+          await dbPut(STORE_CONFIG, { key: 'current_draft', value: collectFormData() });
+          showToast('Arqueo puesto a cero');
+        });
+
+        document.getElementById('btnEntendido').addEventListener('click', async () => {
+          await dbPut(STORE_CONFIG, { key: 'tutorial_seen_v1', value: true });
+          document.getElementById('modalTutorial').classList.remove('open');
+        });
+
+        document.getElementById('btnHelp').addEventListener('click', () => {
+          document.getElementById('modalTutorial').classList.add('open');
+        });
+
+        document.getElementById('btnVerResumen').addEventListener('click', () => {
+          const data = collectFormData();
+          document.getElementById('resumenContenido').innerHTML = buildResumenHTML(data);
+          document.getElementById('modalResumen').classList.add('open');
+        });
+
+        document.getElementById('btnCerrarResumen').addEventListener('click', () => {
+          document.getElementById('modalResumen').classList.remove('open');
+        });
+
+        document.getElementById('btnCopiarResumen').addEventListener('click', () => {
+          const text = document.getElementById('resumenContenido').innerText;
+          if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => showToast('Resumen copiado'));
+          }
+        });
+
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('./sw.js').catch(() => {});
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
